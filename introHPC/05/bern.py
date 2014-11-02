@@ -3,10 +3,6 @@ import time
 import numpy as np
 import matplotlib.pyplot as plt
 
-algors = {
-    'r1' : ( 'b_recur_v1', 'Bernoulli Recursive v1'),
-    'r2' : ( 'b_recur_v2', 'Bernoulli Recursive v2'),
-}
 def calcBm(module, max_m):
     t = []
     for m in range(0, max_m+1, 2):
@@ -27,7 +23,12 @@ def drawGraph(t, filename, title):
     plt.title(title)
     plt.grid()
     plt.savefig(filename + '.png')   # plot.show()
-    
+
+algors = {
+    'r1' : ( 'b_recur_v1', 'Bernoulli Recursive v1'),
+    'r2' : ( 'b_recur_v2', 'Bernoulli Recursive v2'),
+    'r3' : ( 'b_recur_v3', 'Bernoulli Recursive v3'),
+} 
     
 if len(sys.argv) != 3 :
     print("usage: python %s algor number" % sys.argv[0])
