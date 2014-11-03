@@ -7,6 +7,10 @@ def B(m):
 
     if m == 0:
         return Fraction(1, 1)
+    if m == 1:
+        return Fraction(1, 2)
+    if m % 2 == 1:
+        return 0
     sigma = Fraction(0, 1)
     for k in range(m):
         sigma += binomial(m, k) * B(k) / (m - k + 1)
