@@ -38,6 +38,8 @@ algors = {
     'r1' : ( 'b_recur_v1', 'Bernoulli Recursive v1'),
     'r2' : ( 'b_recur_v2', 'Bernoulli Recursive v2'),
     'r3' : ( 'b_recur_v3', 'Bernoulli Recursive v3'),
+    'm1' : ( 'b_modular_v1', 'Bernoulli Modular v1'),
+    'm2' : ( 'b_modular_v2', 'Bernoulli Modular v2'),
 } 
     
 if len(sys.argv) != 3 :
