@@ -248,6 +248,6 @@ auto main(int argc, char *argv[]) -> int
         cout << "usage: " << argv[0] << " m" << endl;
         return 0;
     }
-    cout << "B(22) = " << B(atoi(argv[1])) << endl;
+    cout << "B(" << argv[1] << ") = " << B(atoi(argv[1])) << endl;
     return 0;
 }
