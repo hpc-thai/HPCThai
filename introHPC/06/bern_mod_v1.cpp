@@ -11,7 +11,7 @@ using namespace std;
 class PrimeTable
 {
 public:
-    PrimeTable(const long &size) : _size {size}, _table (size, true) {
+    PrimeTable(const long &size) : _size {size}, _table (size+1, true) {
         _table[0] = _table[1] = false;
         const long limit = (long)sqrt(size);
         for (long i=2; i<=limit; i++) {
