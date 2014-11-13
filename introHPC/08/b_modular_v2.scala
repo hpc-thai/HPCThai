@@ -1,32 +1,29 @@
-package intro
 import util.control.Breaks._
 import scala.annotation.tailrec
 import scala.collection.mutable.Stack
 
-class PrimeTable(size : Int)
-{
-    var _size = size
-    var _table = Array.fill[Boolean](size+1)(true)
-    val limit = math.sqrt(size).toInt
-    for (i <- 2 to limit) {
-        breakable {
-	        if (_table(i) == false) break
-	        for (r <- i+i to size by i) _table(r) = false
-        }
-    }
- 
-    final def nextPrime(pos : Int) : Int = {
-    	for (i <- pos+1 to size) {
-    	    if (_table(i) == true) return i;
-    	}
-    	return -1;
-    }
-}
-
-
-
-object Hello {
-	def computeDk(k : Int, primeTable : PrimeTable) : BigInt = {
+object b_modular_v2 {
+    class PrimeTable(size : Int)
+	{
+	    var _size = size
+	    var _table = Array.fill[Boolean](size+1)(true)
+	    val limit = math.sqrt(size).toInt
+	    for (i <- 2 to limit) {
+	        breakable {
+		        if (_table(i) == false) break
+		        for (r <- i+i to size by i) _table(r) = false
+	        }
+	    }
+	 
+	    final def nextPrime(pos : Int) : Int = {
+	    	for (i <- pos+1 to size) {
+	    	    if (_table(i) == true) return i;
+	    	}
+	    	return -1;
+	    }
+	}
+    
+    def computeDk(k : Int, primeTable : PrimeTable) : BigInt = {
 	    var p = 2;
 	    var dk = BigInt(1)
 	    while (p != -1) {
@@ -49,7 +46,7 @@ object Hello {
 	    return bb
 	}
 	
-	def computePowerMod(a : BigInt, k : Int, m : BigInt) : BigInt = {
+		def computePowerMod(a : BigInt, k : Int, m : BigInt) : BigInt = {
 	    val index = (math.log(k) / math.log(2)).toInt
 	    var powmod = BigInt(1)
 	    var powa = a
@@ -91,6 +88,7 @@ object Hello {
 	       var (a, b, d) = v.pop
 	     
 	        m1 = m1 + (m2 * d)
+	        bb = a
 	        var temp = m1
 	        m1 = m2
 	        m2 = temp
@@ -169,7 +167,7 @@ object Hello {
 	
 	def computeCRT(residue : List[(BigInt, Int)]) : BigInt = {
 	    var mul_m = BigInt(1)
-	    for ((m, n) <- residue) {
+	    for ( (b, m) <- residue) {
 	    	mul_m = mul_m * m
 	    }
 	    var z = BigInt(0)
@@ -177,13 +175,13 @@ object Hello {
 	    var X = BigInt(0)
 	    var b = BigInt(0)
 	    var m = BigInt(0)
-	    
+	     
 	    for ((b, m) <- residue) {
 	        M = mul_m / m
-	        X = congruent(M, 1, M)
+	        X = congruent(M, 1, m)
 	        z = z + (M * X * b)
 	    }
-	    
+	   
 	    while (z > 0) {
 	        z = z - mul_m
 	    }
@@ -197,12 +195,14 @@ object Hello {
 	    val bernBase = Array((BigInt(1), BigInt(1)), (BigInt(1), BigInt(2)), (BigInt(1), BigInt(6)))
 	    if (k < 3) return bernBase(k)
 	    if (k % 2 == 1) return (BigInt(0), BigInt(1))
-	    var Y = (math.ceil(k+0.5) * (math.log(k) / math.log(2))).toInt
+	    var Y = (math.ceil( (k+0.5) * log2(k))).toInt
 	    Y = if (Y < 37) 37 else Y
+	   
 	    var primeTable = new PrimeTable(Y)
 	    val dk = computeDk(k, primeTable)
 	    
-	    val beta = (math.ceil ((k + 0.5) * log2(k) - 4.0094 * k + 2.470 + log2(dk.toDouble) )).toInt
+	    val beta = (math.ceil ((k + 0.5) * log2(k) - 4.094 * k + 2.470 + log2(dk.toDouble) )).toInt
+	    
 	    var p = 3
 	    var M_ = BigInt(1)
 	    var twoPowerBetaPlusOne = BigInt(2).pow(beta+1)
@@ -215,7 +215,8 @@ object Hello {
 	    var M = BigInt(1)
 	    p = 2
 	    var rp = List[(BigInt, Int)]()
-	   
+	    
+	
 	    while (p <= X) {
 	        if (k % (p-1) != 0) {
 	            var bk = computeBkModP(p, k) 
@@ -226,15 +227,15 @@ object Hello {
 	    }
 	   
 	    val R = computeCRT(rp)
+	    
 	    val N_ = norm((dk * R) % M, M)
 	    val nk = if (k % 4 == 2) N_ else N_ - M
 	    return (nk, dk)
 	    
 	}
 	
-	
-	def main(args: Array[String]): Unit = {
-		println(B(18))	
+	def main(args : Array[String]): Unit = {
+		println(B(1000))
 	}
-
 }
+
