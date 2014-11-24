@@ -45,7 +45,7 @@ auto genGraph(std::string strN, std::string strGFlops) -> void
     PyRun_SimpleString("ylabel('GFlops')");
     PyRun_SimpleString("grid()");
     PyRun_SimpleString("savefig('flops.png')");
-    Py_Exit(0);
+    Py_Finalize();
     std:: cout << "Generated flops.png" << std::endl;
 }
 
