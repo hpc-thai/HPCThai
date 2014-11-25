@@ -260,6 +260,8 @@ auto B(long k) -> mpq_class
     stringstream ssP, ssTime;
     ssP << "p = [";
     ssTime << "time = [";
+    cout << "Prime Queue Size = " << primeQueue.size() << endl;
+
     while (!primeQueue.empty()) {
         long pp = primeQueue.front();
         primeQueue.pop();
