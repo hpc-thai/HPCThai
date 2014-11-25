@@ -247,7 +247,7 @@ auto B(long k) -> mpq_class
         rp.push_back(tt);
     }
     auto p_etime = chrono::high_resolution_clock::now();
-    cout << "Parallel Time used: " << chrono::duration_cast<chrono::milliseconds>(p_etime - p_stime).count() << endl;
+    cout << "Parallel Time used: " << chrono::duration_cast<chrono::milliseconds>(p_etime - p_stime).count() << " msecs" << endl;
 
     mpz_class R = computeCRT(rp);
     mpz_class N_ = norm((dk * R) % M, M);
@@ -264,6 +264,6 @@ auto main(int argc, char *argv[]) -> int
     auto t_stime = chrono::high_resolution_clock::now();
     cout << "B(" << argv[1] << ") = " << B(atoi(argv[1])) << endl;
     auto t_etime = chrono::high_resolution_clock::now();
-    cout << "Total Time used: " << chrono::duration_cast<chrono::milliseconds>(t_etime - t_stime).count() << endl;
+    cout << "Total Time used: " << chrono::duration_cast<chrono::milliseconds>(t_etime - t_stime).count() << " msecs" << endl;
     return 0;
 }
