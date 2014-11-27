@@ -178,7 +178,7 @@ def B(k):
         p = primeTable.nextPrime(p)
      
     from pyspark import SparkContext
-    sc = SparkContext(appName="bern")
+    sc = SparkContext(appName="bern_spark")
     
     rdd = sc.parallelize(primeList)
     rp = rdd.map(lambda p : (computeBkModP(p, k), p)).collect()
@@ -193,4 +193,5 @@ def B(k):
     return(Fraction(nk, dk))
 
 
-print(B(1000))
+if __name__ == "__main__":
+    print(B(1000))
