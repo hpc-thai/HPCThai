@@ -8,7 +8,7 @@
 #include <queue>
 #include <chrono>
 #include <sstream>
-#include <python.h>
+#include <Python.h>
 
 using namespace std;
 
@@ -207,15 +207,17 @@ auto computeCRT(vector<tuple<mpz_class, long>> &residue) -> mpz_class
 auto genGraph(std::string strP, std::string strTime) -> void
 {
     Py_Initialize();
-    PyRun_SimpleString("from pylab import *");
+    PyRun_SimpleString("import matplotlib");
+    PyRun_SimpleString("matplotlib.use('Agg')");
+    PyRun_SimpleString("import matplotlib.pyplot as plt");	
     PyRun_SimpleString(strP.c_str());
     PyRun_SimpleString(strTime.c_str());
-    PyRun_SimpleString("plot(p, time, 'g*-')");
-    PyRun_SimpleString("title('Elapsed Time for each P')");
-    PyRun_SimpleString("xlabel('P')");
-    PyRun_SimpleString("ylabel('Time used (msecs)')");
-    PyRun_SimpleString("grid()");
-    PyRun_SimpleString("savefig('tgraph.png')");
+    PyRun_SimpleString("plt.plot(p, time, 'g*-')");
+    PyRun_SimpleString("plt.title('Elapsed Time for each P')");
+    PyRun_SimpleString("plt.xlabel('P')");
+    PyRun_SimpleString("plt.ylabel('Time used (msecs)')");
+    PyRun_SimpleString("plt.grid()");
+    PyRun_SimpleString("plt.savefig('tgraph.png')");
     Py_Finalize();
     cout << "Generated tgraph.png" << endl;
 }
@@ -291,6 +293,6 @@ auto main(int argc, char *argv[]) -> int
     auto t_stime = chrono::high_resolution_clock::now();
     cout << "B(" << argv[1] << ") = " << B(atoi(argv[1])) << endl;
     auto t_etime = chrono::high_resolution_clock::now();
-    cout << "Total Time used: " << chrono::duration_cast<chrono::milliseconds>(t_etime - t_stime).count() << endl;
+    cout << "Total Time used: " << chrono::duration_cast<chrono::milliseconds>(t_etime - t_stime).count() << " msecs" << endl;
     return 0;
 }

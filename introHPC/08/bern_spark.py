@@ -1,6 +1,7 @@
 from fractions import Fraction
 from math import log, ceil, sqrt
 
+
 def B(k):
     class PrimeTable:
         def __init__(self, size):
@@ -157,7 +158,7 @@ def B(k):
     Y = int(max(37.0, ceil((k + 0.5)*log(k, 2))))
     primeTable = PrimeTable(Y)
     dk = computeDk(k, primeTable)
-    beta = ceil( (k+0.5) * log(k, 2) - 4.094 * k + 2.470 + log(dk, 2))
+    beta = int(ceil( (k+0.5) * log(k, 2) - 4.094 * k + 2.470 + log(dk, 2)))
   
     p = 3 ; M_ = 1
     TwoPowerBetaPlusOne = 2 ** (beta + 1)
@@ -176,9 +177,12 @@ def B(k):
             M = M * p
         p = primeTable.nextPrime(p)
      
-    for pp in primeList:
-        rp = rp + [ (computeBkModP(pp, k), pp) ]
-        
+    from pyspark import SparkContext
+    sc = SparkContext(appName="bern_spark")
+    
+    rdd = sc.parallelize(primeList)
+    rp = rdd.map(lambda p : (computeBkModP(p, k), p)).collect()
+   
     R = computeCRT(rp)
    
     N_ = norm( dk * R % M, M)
@@ -187,3 +191,7 @@ def B(k):
     else:
         nk = N_ - M
     return(Fraction(nk, dk))
+
+
+if __name__ == "__main__":
+    print(B(1000))
