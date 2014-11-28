@@ -164,23 +164,6 @@ auto congruent(const mpz_class &a, const mpz_class &b, const mpz_class &m) -> mp
     return (b * inv) % m;
 }
 
-auto oldcongruent(const mpz_class &a, const mpz_class &b, const mpz_class &m) -> mpz_class
-{
-    mpz_class g;
-    mpz_gcd(g.get_mpz_t(), a.get_mpz_t(), m.get_mpz_t());
-    if (b % g != 0) throw "congruent error";
-    mpz_class a_ = a / g;
-    mpz_class b_ = b / g;
-    mpz_class m_ = m / g;
-
-    while (true) {
-        if (b_ % a_ == 0) break;
-        b_ = b_ + m_;
-    }
-    b_ = b_ / a_;
-    return b_;
-}
-
 auto computeCRT(vector<tuple<mpz_class, long>> &residue) -> mpz_class
 {
     mpz_class mul_m = 1;
@@ -200,6 +183,24 @@ auto computeCRT(vector<tuple<mpz_class, long>> &residue) -> mpz_class
         z -= mul_m;
     }
     return z + mul_m;
+}
+
+using crt_t = tuple<mpz_class, long>;
+using primeList_t = queue<long>;
+
+auto distribute(long k, primeList_t primeList) -> vector<crt_t>
+{
+    vector<crt_t> rp;
+    auto p_stime = chrono::high_resolution_clock::now();
+    while (!primeList.empty()) {
+        long pp = primeList.front();
+        primeList.pop();
+        crt_t tt = make_tuple(computeBkModP(pp,k), pp);
+        rp.push_back(tt);
+    }
+    auto p_etime = chrono::high_resolution_clock::now();
+    cout << "Parallel Time used: " << chrono::duration_cast<chrono::milliseconds>(p_etime - p_stime).count() << " msecs" << endl;
+    return rp;
 }
 
 auto B(long k) -> mpq_class
@@ -228,26 +229,17 @@ auto B(long k) -> mpq_class
     long X = p;
     mpz_class M {1};
     p = 2;
-    vector <tuple<mpz_class, long>> rp;
-    queue<long> primeQueue;
+
+    primeList_t primeList;
 
     while (p <= X) {
         if (k % (p-1) != 0) {
-            primeQueue.push(p);
+            primeList.push(p);
             M *= p;
         }
         p = primeTable.nextPrime(p);
     }
-
-    auto p_stime = chrono::high_resolution_clock::now();
-    while (!primeQueue.empty()) {
-        long pp = primeQueue.front();
-        primeQueue.pop();
-        tuple<mpz_class, long> tt = make_tuple(computeBkModP(pp,k), pp);
-        rp.push_back(tt);
-    }
-    auto p_etime = chrono::high_resolution_clock::now();
-    cout << "Parallel Time used: " << chrono::duration_cast<chrono::milliseconds>(p_etime - p_stime).count() << " msecs" << endl;
+    auto rp = distribute(k, primeList);
 
     mpz_class R = computeCRT(rp);
     mpz_class N_ = norm((dk * R) % M, M);

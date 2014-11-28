@@ -146,8 +146,15 @@ def B(k):
         while z > 0:
             z = z - mul_m
         return z + mul_m
+
+    def distribute(k, primeList):
+        from pyspark import SparkContext
+        sc = SparkContext(appName="bern_spark")
         
-        
+        rdd = sc.parallelize(primeList)
+        rp = rdd.map(lambda p : (computeBkModP(p, k), p)).collect()      
+        return rp
+    
 #B(m) code
     bernn_base = [Fraction(1,1), Fraction(-1, 2), Fraction(1, 6)]
     if k < 3:
@@ -176,16 +183,11 @@ def B(k):
             primeList = primeList + [p]
             M = M * p
         p = primeTable.nextPrime(p)
-     
-    from pyspark import SparkContext
-    sc = SparkContext(appName="bern_spark")
     
-    rdd = sc.parallelize(primeList)
-    rp = rdd.map(lambda p : (computeBkModP(p, k), p)).collect()
-   
+    rp = distribute(k, primeList)
     R = computeCRT(rp)
-   
     N_ = norm( dk * R % M, M)
+    
     if k % 4 == 2:
         nk = N_
     else:

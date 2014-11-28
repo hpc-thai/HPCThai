@@ -166,23 +166,6 @@ auto congruent(const mpz_class &a, const mpz_class &b, const mpz_class &m) -> mp
     return (b * inv) % m;
 }
 
-auto oldcongruent(const mpz_class &a, const mpz_class &b, const mpz_class &m) -> mpz_class
-{
-    mpz_class g;
-    mpz_gcd(g.get_mpz_t(), a.get_mpz_t(), m.get_mpz_t());
-    if (b % g != 0) throw "congruent error";
-    mpz_class a_ = a / g;
-    mpz_class b_ = b / g;
-    mpz_class m_ = m / g;
-
-    while (true) {
-        if (b_ % a_ == 0) break;
-        b_ = b_ + m_;
-    }
-    b_ = b_ / a_;
-    return b_;
-}
-
 auto computeCRT(vector<tuple<mpz_class, long>> &residue) -> mpz_class
 {
     mpz_class mul_m = 1;
@@ -209,7 +192,7 @@ auto genGraph(std::string strP, std::string strTime) -> void
     Py_Initialize();
     PyRun_SimpleString("import matplotlib");
     PyRun_SimpleString("matplotlib.use('Agg')");
-    PyRun_SimpleString("import matplotlib.pyplot as plt");	
+    PyRun_SimpleString("import matplotlib.pyplot as plt");
     PyRun_SimpleString(strP.c_str());
     PyRun_SimpleString(strTime.c_str());
     PyRun_SimpleString("plt.plot(p, time, 'g*-')");
@@ -220,6 +203,33 @@ auto genGraph(std::string strP, std::string strTime) -> void
     PyRun_SimpleString("plt.savefig('tgraph.png')");
     Py_Finalize();
     cout << "Generated tgraph.png" << endl;
+}
+
+using crt_t = tuple<mpz_class, long>;
+using primeList_t = queue<long>;
+
+auto distribute(long k, primeList_t primeList) -> vector<crt_t>
+{
+    vector<crt_t> rp;
+    stringstream ssP, ssTime;
+    ssP << "p = [";
+    ssTime << "time = [";
+    cout << "Prime Queue Size = " << primeList.size() << endl;
+
+    while (!primeList.empty()) {
+        long pp = primeList.front();
+        primeList.pop();
+        auto p_stime = chrono::high_resolution_clock::now();
+        crt_t tt = make_tuple(computeBkModP(pp,k), pp);
+        auto p_etime = chrono::high_resolution_clock::now();
+        ssP << pp << ", ";
+        ssTime << chrono::duration_cast<chrono::milliseconds>(p_etime - p_stime).count() << ", ";
+        rp.push_back(tt);
+    }
+    ssP << "]";
+    ssTime << "]";
+    genGraph(ssP.str(), ssTime.str());
+    return rp;
 }
 
 auto B(long k) -> mpq_class
@@ -248,36 +258,17 @@ auto B(long k) -> mpq_class
     long X = p;
     mpz_class M {1};
     p = 2;
-    vector <tuple<mpz_class, long>> rp;
-    queue<long> primeQueue;
+    primeList_t primeList;
 
     while (p <= X) {
         if (k % (p-1) != 0) {
-            primeQueue.push(p);
+            primeList.push(p);
             M *= p;
         }
         p = primeTable.nextPrime(p);
     }
 
-    stringstream ssP, ssTime;
-    ssP << "p = [";
-    ssTime << "time = [";
-    cout << "Prime Queue Size = " << primeQueue.size() << endl;
-
-    while (!primeQueue.empty()) {
-        long pp = primeQueue.front();
-        primeQueue.pop();
-        auto p_stime = chrono::high_resolution_clock::now();
-        tuple<mpz_class, long> tt = make_tuple(computeBkModP(pp,k), pp);
-        auto p_etime = chrono::high_resolution_clock::now();
-        ssP << pp << ", ";
-        ssTime << chrono::duration_cast<chrono::milliseconds>(p_etime - p_stime).count() << ", ";
-        rp.push_back(tt);
-    }
-    ssP << "]";
-    ssTime << "]";
-    genGraph(ssP.str(), ssTime.str());
-
+    auto rp = distribute(k, primeList);
     mpz_class R = computeCRT(rp);
     mpz_class N_ = norm((dk * R) % M, M);
     mpz_class nk = (k % 4 == 2)? N_ : N_ - M;
