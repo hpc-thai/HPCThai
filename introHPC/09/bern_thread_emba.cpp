@@ -8,7 +8,6 @@
 #include <deque>
 #include <chrono>
 #include <thread>
-#include <mutex>
 
 using namespace std;
 
@@ -190,19 +189,14 @@ auto computeCRT(vector<tuple<mpz_class, long>> &residue) -> mpz_class
 using crt_t = tuple<mpz_class, long>;
 using primeList_t = deque<long>;
 
-auto worker(mutex &m, vector<crt_t> &rp, long k, primeList_t &primeList, int threadNo, int nthreads) -> void
+auto worker(vector<crt_t> &rp, long k, primeList_t &primeList, int threadNo, int nthreads) -> void
 {
     auto p_stime = chrono::high_resolution_clock::now();
-    int size_todo = primeList.size() / nthreads;
-    int start = size_todo * threadNo;
-    int stop  = start + size_todo;
-
-    for (int i=start; i<stop; i++) {
+    int max = primeList.size();
+    for (int i=threadNo; i<max; i+=nthreads) {
         long pp = primeList[i];
         crt_t tt = make_tuple(computeBkModP(pp, k), pp);
-        unique_lock<mutex>lck {m};
         rp.push_back(tt);
-        m.unlock();
     }
     auto p_etime = chrono::high_resolution_clock::now();
     cout << "\nThread[" <<  threadNo << "] = " <<
@@ -211,12 +205,11 @@ auto worker(mutex &m, vector<crt_t> &rp, long k, primeList_t &primeList, int thr
 auto distribute(long k, primeList_t primeList) -> vector<crt_t>
 {
     vector<crt_t> rp;
-    mutex m;
     auto nthreads = thread::hardware_concurrency();
     thread threads[nthreads];
 
     for (int i=0; i<nthreads; i++) {
-        threads[i] = thread(worker, ref(m), ref(rp), k, ref(primeList), i, nthreads);
+        threads[i] = thread(worker, ref(rp), k, ref(primeList), i, nthreads);
     }
     for (int i=0; i<nthreads; i++) {
         threads[i].join();

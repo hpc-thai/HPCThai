@@ -190,19 +190,20 @@ auto computeCRT(vector<tuple<mpz_class, long>> &residue) -> mpz_class
 using crt_t = tuple<mpz_class, long>;
 using primeList_t = deque<long>;
 
-auto worker(mutex &m, vector<crt_t> &rp, long k, primeList_t &primeList, int threadNo, int nthreads) -> void
+auto worker(mutex &m1, mutex &m2, vector<crt_t> &rp, long k, primeList_t &primeList, int threadNo) -> void
 {
     auto p_stime = chrono::high_resolution_clock::now();
-    int size_todo = primeList.size() / nthreads;
-    int start = size_todo * threadNo;
-    int stop  = start + size_todo;
+    while (true) {
+        unique_lock<mutex>lck1 {m1};
+        if (primeList.empty()) break;
+        long pp = primeList.front();
+        primeList.pop_front();
+        lck1.unlock();
 
-    for (int i=start; i<stop; i++) {
-        long pp = primeList[i];
         crt_t tt = make_tuple(computeBkModP(pp, k), pp);
-        unique_lock<mutex>lck {m};
+        unique_lock<mutex>lck2 {m2};
         rp.push_back(tt);
-        m.unlock();
+        lck2.unlock();
     }
     auto p_etime = chrono::high_resolution_clock::now();
     cout << "\nThread[" <<  threadNo << "] = " <<
@@ -211,12 +212,12 @@ auto worker(mutex &m, vector<crt_t> &rp, long k, primeList_t &primeList, int thr
 auto distribute(long k, primeList_t primeList) -> vector<crt_t>
 {
     vector<crt_t> rp;
-    mutex m;
+    mutex m1, m2;
     auto nthreads = thread::hardware_concurrency();
     thread threads[nthreads];
 
     for (int i=0; i<nthreads; i++) {
-        threads[i] = thread(worker, ref(m), ref(rp), k, ref(primeList), i, nthreads);
+        threads[i] = thread(worker, ref(m1), ref(m2), ref(rp), k, ref(primeList), i);
     }
     for (int i=0; i<nthreads; i++) {
         threads[i].join();
