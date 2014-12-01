@@ -5,7 +5,7 @@
 #include <tuple>
 #include <stack>
 #include <utility>
-#include <queue>
+#include <deque>
 #include <chrono>
 
 using namespace std;
@@ -186,7 +186,7 @@ auto computeCRT(vector<tuple<mpz_class, long>> &residue) -> mpz_class
 }
 
 using crt_t = tuple<mpz_class, long>;
-using primeList_t = queue<long>;
+using primeList_t = deque<long>;
 
 auto distribute(long k, primeList_t primeList) -> vector<crt_t>
 {
@@ -194,7 +194,7 @@ auto distribute(long k, primeList_t primeList) -> vector<crt_t>
     auto p_stime = chrono::high_resolution_clock::now();
     while (!primeList.empty()) {
         long pp = primeList.front();
-        primeList.pop();
+        primeList.pop_front();
         crt_t tt = make_tuple(computeBkModP(pp,k), pp);
         rp.push_back(tt);
     }
@@ -234,7 +234,7 @@ auto B(long k) -> mpq_class
 
     while (p <= X) {
         if (k % (p-1) != 0) {
-            primeList.push(p);
+            primeList.push_back(p);
             M *= p;
         }
         p = primeTable.nextPrime(p);
