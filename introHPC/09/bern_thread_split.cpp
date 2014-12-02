@@ -195,7 +195,8 @@ auto worker(mutex &m, vector<crt_t> &rp, long k, primeList_t &primeList, int thr
     auto p_stime = chrono::high_resolution_clock::now();
     int size_todo = primeList.size() / nthreads;
     int start = size_todo * threadNo;
-    int stop  = start + size_todo;
+
+    stop = (threadNo == (nthreads - 1))? primeList.size() : start + size_todo;
 
     for (int i=start; i<stop; i++) {
         long pp = primeList[i];

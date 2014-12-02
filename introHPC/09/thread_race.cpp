@@ -37,9 +37,8 @@ auto main() -> int
         threads[i].join();
         sum += sumWorkers[i];
     }
-    cout << "Sum should be: " << setiosflags(ios::fixed) 
+    cout << "Sum should be: " << setiosflags(ios::fixed)
 		<< setprecision(0) << MAX / 2.0 * (MAX +1) << endl;
     cout << "Sum calculate: " << sum << endl;
-
     return 0;
 }

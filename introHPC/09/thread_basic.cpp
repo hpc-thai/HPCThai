@@ -19,5 +19,5 @@ auto main() -> int
     cin.get();
     f1.join();
     f2.join();
-
+    print("done");
 }

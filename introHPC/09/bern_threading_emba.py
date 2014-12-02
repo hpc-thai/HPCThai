@@ -1,7 +1,8 @@
 from fractions import Fraction
 from math import log, ceil, sqrt
+import time
 
-@profile
+
 def B(k):
     class PrimeTable:
         def __init__(self, size):
@@ -132,7 +133,6 @@ def B(k):
         if (a, b) == (1, 1):
             return 1
         inv = computeInvertMod(a, m)
-        
         return  (b * inv) % m
    
     def computeCRT(residue):
@@ -143,11 +143,40 @@ def B(k):
         for (b, m) in residue:
             M = (mul_m) // m
             X = congruent(M, 1, m)
-           
             z += M * X * b
         while z > 0:
             z = z - mul_m
         return z + mul_m
+
+    def worker(lock1, rpWorkers, k, primeList, threadNo, nthreads):
+        stime = time.time()
+        max = len(primeList)
+        
+        for i in range(threadNo, max, nthreads):
+            pp = primeList[i]
+            tt  = (computeBkModP(pp, k), pp)
+            
+            rpWorkers[threadNo].append(tt)
+          
+          
+        etime = time.time()
+        print("Thread [%d] = %d msecs" % (threadNo, (etime - stime)*1000))
+        
+    def distribute(k, primeList):
+        from threading import Thread, Lock
+        from multiprocessing import cpu_count
+        from functools import reduce
+        nthreads = cpu_count()
+        rpWorkers = [ [] for _ in range(nthreads)] 
+        lock1 = Lock()
+        threads = [Thread(target=worker, args=(lock1, rpWorkers, k, primeList, i, nthreads))
+            for i in range(nthreads)]
+        [t.start() for t in threads ]
+        [t.join() for t in threads]
+       
+        rp = reduce(lambda a, b : a + b, rpWorkers)
+        return rp
+    
 #B(m) code
     bernn_base = [Fraction(1,1), Fraction(-1, 2), Fraction(1, 6)]
     if k < 3:
@@ -156,11 +185,9 @@ def B(k):
     if k & 1:
         return Fraction (0, 1)
     Y = int(max(37.0, ceil((k + 0.5)*log(k, 2))))
-   
     primeTable = PrimeTable(Y)
     dk = computeDk(k, primeTable)
-    beta = ceil( (k+0.5) * log(k, 2) - 4.094 * k + 2.470 + log(dk, 2))
-   
+    beta = int(ceil( (k+0.5) * log(k, 2) - 4.094 * k + 2.470 + log(dk, 2)))
   
     p = 3 ; M_ = 1
     TwoPowerBetaPlusOne = 2 ** (beta + 1)
@@ -172,18 +199,23 @@ def B(k):
     p = 2
     rp = []
     M = 1
+    primeList = []
     while (p <= X):
         if k % (p-1) != 0:
-            rp = rp + [ (computeBkModP(p, k), p) ]
+            primeList = primeList + [p]
             M = M * p
         p = primeTable.nextPrime(p)
-    R = computeCRT(rp)
     
+    rp = distribute(k, primeList)
+    R = computeCRT(rp)
     N_ = norm( dk * R % M, M)
+    
     if k % 4 == 2:
         nk = N_
     else:
         nk = N_ - M
     return(Fraction(nk, dk))
 
-print(B(1000))
+
+if __name__ == "__main__":
+    print(B(1000))
