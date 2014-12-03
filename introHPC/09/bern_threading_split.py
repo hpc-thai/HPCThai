@@ -150,7 +150,12 @@ def B(k):
 
     def worker(lock1, rp, k, primeList, threadNo, nthreads):
         stime = time.time()
-        size_todo = len(primeList) // nthreads
+        size_todo = len(primeList) / nthreads
+        if size_todo - int(size_todo) != 0:
+            size_todo = int(size_todo) + 1
+        else:
+            size_todo = int(size_todo)
+            
         start = size_todo * threadNo
         if threadNo == (nthreads - 1): 
             stop = len(primeList)
@@ -219,4 +224,9 @@ def B(k):
 
 
 if __name__ == "__main__":
-    print(B(1000))
+    import sys
+    
+    if len(sys.argv) != 2:
+        print("usage: %s m" %(sys.argv[0]))
+        sys.exit(0)
+    print(B(int(sys.argv[1])))

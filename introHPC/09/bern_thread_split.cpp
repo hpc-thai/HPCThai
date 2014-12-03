@@ -193,10 +193,13 @@ using primeList_t = deque<long>;
 auto worker(mutex &m, vector<crt_t> &rp, long k, primeList_t &primeList, int threadNo, int nthreads) -> void
 {
     auto p_stime = chrono::high_resolution_clock::now();
+    float s = primeList.size() / nthreads;
     int size_todo = primeList.size() / nthreads;
+    if (s - static_cast<int>(s) != 0.0) {
+        size_todo++;
+    }
     int start = size_todo * threadNo;
-
-    stop = (threadNo == (nthreads - 1))? primeList.size() : start + size_todo;
+    int stop = (threadNo == (nthreads - 1))? primeList.size() : start + size_todo;
 
     for (int i=start; i<stop; i++) {
         long pp = primeList[i];

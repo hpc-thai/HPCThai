@@ -189,14 +189,15 @@ auto computeCRT(vector<tuple<mpz_class, long>> &residue) -> mpz_class
 using crt_t = tuple<mpz_class, long>;
 using primeList_t = deque<long>;
 
-auto worker(vector<crt_t> &rp, long k, primeList_t &primeList, int threadNo, int nthreads) -> void
+auto worker(vector<vector<crt_t>> &rpWorkers, long k, primeList_t &primeList, int threadNo, int nthreads) -> void
 {
     auto p_stime = chrono::high_resolution_clock::now();
+
     int max = primeList.size();
     for (int i=threadNo; i<max; i+=nthreads) {
         long pp = primeList[i];
         crt_t tt = make_tuple(computeBkModP(pp, k), pp);
-        rp.push_back(tt);
+        rpWorkers[threadNo].push_back(tt);
     }
     auto p_etime = chrono::high_resolution_clock::now();
     cout << "\nThread[" <<  threadNo << "] = " <<
@@ -204,15 +205,17 @@ auto worker(vector<crt_t> &rp, long k, primeList_t &primeList, int threadNo, int
 }
 auto distribute(long k, primeList_t primeList) -> vector<crt_t>
 {
-    vector<crt_t> rp;
     auto nthreads = thread::hardware_concurrency();
     thread threads[nthreads];
+    vector<vector<crt_t>> rpWorkers(nthreads, vector<crt_t>());
 
     for (int i=0; i<nthreads; i++) {
-        threads[i] = thread(worker, ref(rp), k, ref(primeList), i, nthreads);
+        threads[i] = thread(worker, ref(rpWorkers), k, ref(primeList), i, nthreads);
     }
+    vector<crt_t> rp;
     for (int i=0; i<nthreads; i++) {
         threads[i].join();
+        rp.insert(rp.end(), rpWorkers[i].begin(), rpWorkers[i].end());
     }
     return rp;
 }

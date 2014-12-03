@@ -216,6 +216,10 @@ def B(k):
         nk = N_ - M
     return(Fraction(nk, dk))
 
-
 if __name__ == "__main__":
-    print(B(1000))
+    import sys
+    
+    if len(sys.argv) != 2:
+        print("usage: %s m" %(sys.argv[0]))
+        sys.exit(0)
+    print(B(int(sys.argv[1])))
