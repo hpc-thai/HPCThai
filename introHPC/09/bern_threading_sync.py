@@ -166,8 +166,8 @@ def B(k):
         
     def distribute(k, primeList):
         from threading import Thread, Lock
-        from multiprocessing import cpu_count
-        nthreads = cpu_count()
+        #from multiprocessing import cpu_count
+        nthreads = 8 #cpu_count()
         lock1 = Lock()
         lock2 = Lock()
         rp = []

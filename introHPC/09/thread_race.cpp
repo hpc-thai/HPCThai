@@ -11,10 +11,14 @@ const int nthreads = 2;
 
 void worker(deque<long>&d, int threadNo, vector<long> &sumWorkers)
 {
-    while(!d.empty()) {
-        long num = d.front();
-        d.pop_front();
-        sumWorkers[threadNo] += num;
+    try {
+        while(!d.empty()) {
+            long num = d.front();
+            d.pop_front();
+            sumWorkers[threadNo] += num;
+        }
+    } catch (...) {
+        cout << "Exception occurred!" << endl;
     }
 }
 
