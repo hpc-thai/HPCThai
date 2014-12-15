@@ -148,40 +148,38 @@ def B(k):
             z = z - mul_m
         return z + mul_m
 
-    def worker(lock1, rp, k, primeList, threadNo, nthreads):
+    
+    def worker(rpQueue, k, primeArray, threadNo, nthreads):
         stime = time.time()
-        size_todo = len(primeList) / nthreads
-        if size_todo - int(size_todo) != 0:
-            size_todo = int(size_todo) + 1
-        else:
-            size_todo = int(size_todo)
-            
-        start = size_todo * threadNo
-        if threadNo == (nthreads - 1): 
-            stop = len(primeList)
-        else:
-            stop = start + size_todo
+        max = len(primeArray)
         
-        for i in range(start, stop):
-            pp = primeList[i]
+        for i in range(threadNo, max, nthreads):
+            pp = primeArray[i]
             tt  = (computeBkModP(pp, k), pp)
-            lock1.acquire()
-            rp.append(tt)
-            lock1.release()
+            rpQueue.put(tt)
         etime = time.time()
         print("Thread [%d] = %d msecs" % (threadNo, (etime - stime)*1000))
         
     def distribute(k, primeList):
-        from threading import Thread, Lock
-        from multiprocessing import cpu_count
-        nthreads = cpu_count()
-        lock1 = Lock()
-        rp = []
-        threads = [Thread(target=worker, args=(lock1, rp, k, primeList, i, nthreads))
+        import multiprocessing as mp
+        nthreads = mp.cpu_count()
+        rpQueue = mp.Queue() 
+        
+        primeArray = mp.Array('i', len(primeList))
+        for i in range(len(primeList)):
+            primeArray[i] = primeList[i]
+            
+        threads = [mp.Process(target=worker, args=(rpQueue, k, primeArray, i, nthreads))
             for i in range(nthreads)]
         [t.start() for t in threads ]
         [t.join() for t in threads]
+       
+        rp = []
+        while rpQueue.empty() == False:
+            rp.append(rpQueue.get())
+
         return rp
+    
     
 #B(m) code
     bernn_base = [Fraction(1,1), Fraction(-1, 2), Fraction(1, 6)]

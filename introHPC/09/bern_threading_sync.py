@@ -151,16 +151,14 @@ def B(k):
     def worker(lock1, lock2, rp, k, primeList, threadNo, nthreads):
         stime = time.time()
         while True:
-            lock1.acquire()
-            if len(primeList) == 0:
-                lock1.release()
-                break
-            pp = primeList.pop(0)
-            lock1.release()
+            with lock1:
+                if len(primeList) == 0:
+                    break
+                pp = primeList.pop(0)
             tt  = (computeBkModP(pp, k), pp)
-            lock2.acquire()
-            rp.append(tt)
-            lock2.release()
+            with lock2:
+                rp.append(tt)
+            
         etime = time.time()
         print("Thread [%d] = %d msecs" % (threadNo, (etime - stime)*1000))
         
