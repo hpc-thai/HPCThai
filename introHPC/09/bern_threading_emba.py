@@ -164,9 +164,8 @@ def B(k):
         
     def distribute(k, primeList):
         from threading import Thread, Lock
-        from multiprocessing import cpu_count
         from functools import reduce
-        nthreads = cpu_count()
+        nthreads = 8
         rpWorkers = [ [] for _ in range(nthreads)] 
         lock1 = Lock()
         threads = [Thread(target=worker, args=(lock1, rpWorkers, k, primeList, i, nthreads))
