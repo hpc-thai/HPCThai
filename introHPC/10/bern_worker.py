@@ -1,5 +1,4 @@
 from math import log
-import time
 
 def computePowerMod(a, k, m): 
     index = int(log(k, 2)) 

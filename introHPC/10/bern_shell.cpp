@@ -7,10 +7,14 @@
 #include <utility>
 #include <deque>
 #include <chrono>
-#include <thread>
-#include <mutex>
+#include <sstream>
+#include <zmqpp/zmqpp.hpp>
 
 using namespace std;
+
+zmqpp::context context;
+zmqpp::socket sender(context, zmqpp::socket_type::push);
+zmqpp::socket receiver(context, zmqpp::socket_type::pull);
 
 class PrimeTable
 {
@@ -124,37 +128,29 @@ auto computeCRT(vector<tuple<mpz_class, long>> &residue) -> mpz_class
 using crt_t = tuple<mpz_class, long>;
 using primeList_t = deque<long>;
 
-auto worker(mutex &m1, mutex &m2, vector<crt_t> &rp, long k, primeList_t &primeList, int threadNo) -> void
-{
-    auto p_stime = chrono::high_resolution_clock::now();
-    while (true) {
-        unique_lock<mutex>lck1 {m1};
-        if (primeList.empty()) break;
-        long pp = primeList.front();
-        primeList.pop_front();
-        lck1.unlock();
-
-        crt_t tt = make_tuple(computeBkModP(pp, k), pp);
-        unique_lock<mutex>lck2 {m2};
-        rp.push_back(tt);
-        lck2.unlock();
-    }
-    auto p_etime = chrono::high_resolution_clock::now();
-    cout << "\nThread[" <<  threadNo << "] = " <<
-            chrono::duration_cast<chrono::milliseconds>(p_etime - p_stime).count() << " msecs" << endl;
-}
 auto distribute(long k, primeList_t primeList) -> vector<crt_t>
 {
-    vector<crt_t> rp;
-    mutex m1, m2;
-    auto nthreads = thread::hardware_concurrency();
-    thread threads[nthreads];
-
-    for (int i=0; i<nthreads; i++) {
-        threads[i] = thread(worker, ref(m1), ref(m2), ref(rp), k, ref(primeList), i);
+    for (long p : primeList) {
+        stringstream ssOut;
+        zmqpp::message messageOut;
+        ssOut.str(string());
+        ssOut << k << "/" << p;
+        messageOut << ssOut.str();
+        sender.send(messageOut);
     }
-    for (int i=0; i<nthreads; i++) {
-        threads[i].join();
+    vector<crt_t> rp;
+    for (int i=0; i< primeList.size(); i++) {
+        stringstream ssIn;
+        zmqpp::message messageIn;
+        string str;
+        long p, t;
+        char slash;
+        receiver.receive(messageIn);
+        messageIn >> str;
+        ssIn.str(str);
+        ssIn >> t >> slash >> p;
+        crt_t tt = make_tuple(t, p);
+        rp.push_back(tt);
     }
     return rp;
 }
@@ -205,13 +201,17 @@ auto B(long k) -> mpq_class
 
 auto main(int argc, char *argv[]) -> int
 {
-    if (argc != 2) {
-        cout << "usage: " << argv[0] << " m" << endl;
-        return 0;
+    sender.bind("tcp://*:6666");
+    receiver.bind("tcp://*:7777");
+
+    while (1) {
+        long k;
+        cout << ">>> ";
+        cin >> k;
+        auto t_stime = chrono::high_resolution_clock::now();
+        cout << "B(" << k << ") = " << B(k) << endl;
+        auto t_etime = chrono::high_resolution_clock::now();
+        cout << "elapsed time: " << chrono::duration_cast<chrono::milliseconds>(t_etime - t_stime).count() << " msecs" << endl;
     }
-    auto t_stime = chrono::high_resolution_clock::now();
-    cout << "B(" << argv[1] << ") = " << B(atoi(argv[1])) << endl;
-    auto t_etime = chrono::high_resolution_clock::now();
-    cout << "Total Time used: " << chrono::duration_cast<chrono::milliseconds>(t_etime - t_stime).count() << " msecs" << endl;
     return 0;
 }

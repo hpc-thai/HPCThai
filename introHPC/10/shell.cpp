@@ -1,24 +1,38 @@
-#include <zmq.hpp>
-#include <iotream>
+#include <zmqpp/zmqpp.hpp>
+#include <iostream>
 
 auto main() -> int
 {
-    zmq::context_t context(1);
+    zmqpp::context context;
 
-    zmq::socket_t sender(context, ZMQ_PUSH);
+    zmqpp::socket sender(context, zmqpp::socket_type::push);
     sender.bind("tcp://*:6666");
 
-    zmq::socket_t receiver(context, ZMQ_PULL);
+    zmqpp::socket receiver(context, zmqpp::socket_type::pull);
     receiver.bind("tcp://*:7777");
 
     while (1) {
         int sum = 0;
         int max;
-        cout << ">>>";
+        std::cout << ">>>";
         std::cin >> max;
         for (int i=1; i<=max; i++) {
-            sender.send_string("%s")
+            zmqpp::message message;
+            message << std::to_string(i);
+            sender.send(message);
+            std::cout << "Sent: " << i << std::endl;
         }
+        std::cout << "Data sent." << std::endl;
+        for (int i=1; i<=max; i++) {
+            zmqpp::message message;
+            std::string str;
+            receiver.receive(message);
+            message >> str;
+            int num = std::stoi(str);
+            sum += num;
+            std::cout << "Received: " << num << std::endl;
+        }
+        std::cout << std::endl << "Answer is " << sum << std::endl;
 
     }
     return 0;

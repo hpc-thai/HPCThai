@@ -12,10 +12,11 @@ while (True):
     sum = 0
     max = int(input(">>> "))
     for i in range(1, max+1):
-        sender.send_string('%s' % i)
-    print("data sent")
+        sender.send_string(b'%s' % i)
+        print("Sent: %s" % i)
+    print("data sent.")
     for i in range(1, max+1):
         num = int(receiver.recv_string())
-        print("Receive %s" % num)
+        print("Received: %s" % num)
         sum = sum + num
-    print("Answer is : %s" % sum)
+    print("\nAnswer is : %s" % sum)
