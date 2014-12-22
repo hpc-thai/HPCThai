@@ -11,5 +11,5 @@ while (True):
     num = int(receiver.recv_string())
     print("Received: %s" % num)
     num = num * 10
-    sender.send_string(b'%s' % num)   
+    sender.send_string('%s' % num)   
     print("Sent : %s" % num)

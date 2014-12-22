@@ -12,7 +12,7 @@ while (True):
     sum = 0
     max = int(input(">>> "))
     for i in range(1, max+1):
-        sender.send_string(b'%s' % i)
+        sender.send_string('%s' % i)
         print("Sent: %s" % i)
     print("data sent.")
     for i in range(1, max+1):
