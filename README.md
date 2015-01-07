@@ -1,8 +1,8 @@
 High Performance Computing Thai
 ===============================
-ข้อมูลในเ GitHub นี้เป็น source code จาก website http://www.hpc-thai.com
+This is the source code from website http://www.hpc-thai.com
 
-ท่านสามารถ clone ได้โดยใช้คำสั่ง 
+you can clone to your machine by using the following command: 
 
 git clone https://github.com/hpc-thai/HPCThai.git
 
