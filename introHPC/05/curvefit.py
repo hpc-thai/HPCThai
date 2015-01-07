@@ -20,7 +20,7 @@ print('Estimate B(%s) used %.2f secs' % (next, np.abs(fit(next))))
 print('Estimate B(100) used %.2f secs' % (fit(100)))
 xx = np.arange(0,x[-1]+.5,.5)
 plt.plot(x, t, 'rx', xx, np.abs(fit(xx)), 'b-')
-plt.title('Curve Fitting Polynomail Degree %s' % degree)
+plt.title('Curve Fitting Polynomial Degree %s' % degree)
 plt.xlabel("Bm")
 plt.ylabel("Time used (secs)")
 plt.grid()
@@ -39,4 +39,3 @@ plt.grid()
 estFileName = baseFileName + '_est.png'
 plt.savefig(estFileName)
 print("file %s is generated" % estFileName)
-
